@@ -272,6 +272,10 @@ def lora_ensync_rtc(uart):
     uart.write(payload)
     print(f"送信データ:{payload}")
 
+
+    # モジュールのAUXの信号が変わるのを待つ、待たないとHIGHからビジーのLOWに変わってないことがある
+    time.sleep(0.5)
+
     # モジュールのアイドル状態を確認
     while LR_AUX.value == 0:
         time.sleep(0.01)

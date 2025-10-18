@@ -30,5 +30,7 @@ while True:
         sync_rtc.sync_rtc(server_unix_time)
     else:
         print("サーバーとの時刻同期に失敗しました")
+    
+    print("１サイクル終了、５分間のインターバルに入ります")
 
     utime.sleep(300)
