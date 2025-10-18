@@ -334,9 +334,6 @@ def lora_receive(uart):
     else: # AUXが0で受信アクティブになったが受信バッファにデータ存在しなかった
         print("データを受信できませんでした。")
 
-    #rcv_data = rcv_data.decode("utf-8")
-#    format_string = 'B B B I I I I I B'
-#    format_string = 'I I I I I'
     format_string = '>IIIII'
     rcv_data = struct.unpack(format_string, rcv_data)
 

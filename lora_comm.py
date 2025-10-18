@@ -221,7 +221,7 @@ def get_server_unixtime():
     # 受信バッファの有無でモジュールの動作を監視する
     rcv_start_time = utime.time() # タイムアウト計測用
     while uart.any() == 0:
-        utime.sleep_(0.1)
+        utime.sleep(0.1)
         # ２秒間サーバーからの送信が無ければタイムアウトで抜ける、返り値-1でエラーを返す
         if utime.time() - rcv_start_time > 2:
             return -1
@@ -257,7 +257,7 @@ def get_server_unixtime():
         print("データを受信できませんでした。")
 
 #    format_string = 'I I I I I'
-    format_string = '>I'
+    format_string = 'I'
     (unix_time, ) = struct.unpack(format_string, rcv_data)
 
     # 受信処理のクールダウン待ち
