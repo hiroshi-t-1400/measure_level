@@ -257,7 +257,7 @@ def get_server_unixtime():
         print("データを受信できませんでした。")
 
 #    format_string = 'I I I I I'
-    format_string = 'I'
+    format_string = '>I'
     (unix_time, ) = struct.unpack(format_string, rcv_data)
 
     # 受信処理のクールダウン待ち

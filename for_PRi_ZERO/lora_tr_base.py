@@ -274,7 +274,7 @@ def lora_ensync_rtc(uart):
 
 
     # モジュールのAUXの信号が変わるのを待つ、待たないとHIGHからビジーのLOWに変わってないことがある
-    time.sleep(0.5)
+#    time.sleep(0.5)
 
     # モジュールのアイドル状態を確認
     while LR_AUX.value == 0:
@@ -370,7 +370,9 @@ while True:
     final_distances = [d1 / 10.0, d2 / 10.0, d3 / 10.0, d4 / 10.0]
 
 
+
     print(f"Time: {time.ctime(timestamp)}")
+    print(f"gmTime: {time.gmtime(timestamp)}")
     print(f"Distances (cm): {final_distances}")
     print(f"RSSI: {rssi}dBm")
 
