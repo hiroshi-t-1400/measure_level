@@ -194,6 +194,8 @@ def lora_transmission(txdt):
     uart.write(payload)
     print(f"送信データ:{payload}")
 
+    # モジュールのAUXの信号が変わるのを待つ、待たないとHIGHからビジーのLOWに変わってないことがある
+    utime.sleep(0.5)
     # モジュールのアイドル状態を確認
     while LR_AUX.value() == 0:
         utime.sleep(0.01)
@@ -206,32 +208,29 @@ def lora_transmission(txdt):
 #   子機専用受信、RTC校正用
 #
 ######################################
-# データ送信後に実行、１秒間待機し４バイトのUNIX時間を受け取る
+# データ送信後に実行、２秒間待機し４バイトのUNIX時間を受け取る
 
 def get_server_unixtime():
-    print("受信中......")
+    print("RTC校正データ受信中...")
     payload = bytes()
     rcv_data = bytes()
     rssi = 0
 
-    # データ受信待ち (LR_AUXがLOWになるのを待つ)
-    # LR_AUXがLOWになるのを待つ（データ受信開始の合図）
+    # データ受信待ち
+    # RTC校正データは４バイトで短いためAUXの信号で動作を監視できない
+    # 受信バッファの有無でモジュールの動作を監視する
     rcv_start_time = utime.time() # タイムアウト計測用
-    while LR_AUX.value() == 1:
-        utime.sleep_ms(10)
-        # １秒間サーバーからの送信が無ければタイムアウトで抜ける、返り値-1でエラーを返す
-        if utime.time() - rcv_start_time > 1:
+    while uart.any() == 0:
+        utime.sleep(0.1)
+        # ２秒間サーバーからの送信が無ければタイムアウトで抜ける、返り値-1でエラーを返す
+        if utime.time() - rcv_start_time > 2:
             return -1
-        # CPU負荷を軽減するため、短いスリープを入れます
         pass
-    
-    print("データ受信開始")
 
-    # データ受信完了待ち (LR_AUXがHIGHに戻るまでループ)
-    while LR_AUX.value() == 0:
-        if uart.any() > 0:
-            payload += uart.read()
-        utime.sleep_ms(10) # CPU負荷を軽減
+    # データの受信を確認、バッファ内のデータを取得
+    while uart.any() > 0:
+        payload += uart.read()
+        utime.sleep_ms(10)
 
     # ループを抜けた直後の取りこぼしを防ぐ
     if uart.any() > 0:
@@ -257,16 +256,11 @@ def get_server_unixtime():
     else: # AUXが0で受信アクティブになったが受信バッファにデータ存在しなかった
         print("データを受信できませんでした。")
 
-    # debug
-    print(rcv_data)
-    print(f"受信データバイト数: {len(rcv_data)}")
-
-    #rcv_data = rcv_data.decode("utf-8")
 #    format_string = 'I I I I I'
     format_string = '>I'
-    rcv_data = struct.unpack(format_string, rcv_data)
+    (unix_time, ) = struct.unpack(format_string, rcv_data)
 
     # 受信処理のクールダウン待ち
     utime.sleep(0.1)
 
-    return rcv_data, rssi
+    return unix_time, rssi

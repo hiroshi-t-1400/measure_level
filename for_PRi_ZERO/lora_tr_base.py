@@ -272,6 +272,10 @@ def lora_ensync_rtc(uart):
     uart.write(payload)
     print(f"送信データ:{payload}")
 
+
+    # モジュールのAUXの信号が変わるのを待つ、待たないとHIGHからビジーのLOWに変わってないことがある
+#    time.sleep(0.5)
+
     # モジュールのアイドル状態を確認
     while LR_AUX.value == 0:
         time.sleep(0.01)
@@ -330,9 +334,6 @@ def lora_receive(uart):
     else: # AUXが0で受信アクティブになったが受信バッファにデータ存在しなかった
         print("データを受信できませんでした。")
 
-    #rcv_data = rcv_data.decode("utf-8")
-#    format_string = 'B B B I I I I I B'
-#    format_string = 'I I I I I'
     format_string = '>IIIII'
     rcv_data = struct.unpack(format_string, rcv_data)
 
@@ -369,7 +370,9 @@ while True:
     final_distances = [d1 / 10.0, d2 / 10.0, d3 / 10.0, d4 / 10.0]
 
 
+
     print(f"Time: {time.ctime(timestamp)}")
+    print(f"gmTime: {time.gmtime(timestamp)}")
     print(f"Distances (cm): {final_distances}")
     print(f"RSSI: {rssi}dBm")
 
